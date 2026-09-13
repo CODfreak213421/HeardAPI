@@ -9,4 +9,5 @@ urlpatterns = [
     path('patient/CreatePatient/', views.CreatePatientAPIView.as_view(), name='create-patient'),
     path('patient/CreatePatientReflectInput/', views.CreatePatientReflectInputAPIView.as_view(), name='create-patient-reflect-input'),
     path('patient/CreatePatientFoodInput/', views.CreatePatientFoodInputAPIView.as_view(), name='create-patient-food-input'),
+    path('patient/CreatePatientToiletInput/', views.CreatePatientToiletInputAPIView.as_view(), name='create-patient-toilet-input'),
 ]

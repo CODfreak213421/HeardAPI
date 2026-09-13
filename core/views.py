@@ -7,7 +7,7 @@ from rest_framework import generics
 from core.models import PatientRecord, PatientEntry, HeardAIMonthlyAnalysis
 
 # import serializers
-from core.serializers import PatientDetailEntryAISerializer, PatientEntryCreateFoodInputSerializer, PatientEntryCreateReflectInputSerializer, PatientRecordSerializer
+from core.serializers import PatientDetailEntryAISerializer, PatientEntryCreateFoodInputSerializer, PatientEntryCreateReflectInputSerializer, PatientEntryCreateToiletInputSerializer, PatientRecordSerializer
 
 # Import my celery tasks 
 from .tasks import *
@@ -65,6 +65,8 @@ class CreatePatientFoodInputAPIView(generics.CreateAPIView):
                 patient_foodInput_image=""
             )
 
+        
+
 
 # Create your views here.
 class EntryDetailAPIView(generics.RetrieveAPIView):
@@ -72,3 +74,21 @@ class EntryDetailAPIView(generics.RetrieveAPIView):
     queryset = PatientEntry.objects.all()
     lookup_field = 'id'
     lookup_url_kwarg = 'entry_id'
+
+
+class CreatePatientToiletInputAPIView(generics.CreateAPIView):
+    serializer_class = PatientEntryCreateToiletInputSerializer
+
+    def perform_create(self, serializer):
+        # Save the new PatientEntry instance
+        patient_entry = serializer.save()
+
+        toilet_input = patient_entry.toilet_inputs
+
+        HAI_toilet_analysis_task.delay(
+            entry_id=patient_entry.id,
+            patient_stool_type=toilet_input.stool_type,
+            patient_stool_blood=toilet_input.stool_blood,
+            patient_stool_urgency=toilet_input.stool_urgency,
+            patient_stool_at_night=toilet_input.stool_at_night
+        )

@@ -17,9 +17,27 @@ class PatientRecord(models.Model):
 
 class PatientBackground(models.Model):
     patient_record = models.OneToOneField(PatientRecord, on_delete=models.CASCADE, related_name='background')
-    medical_history = models.TextField()
-    allergies = models.TextField()
-    medications = models.TextField()
+
+    class Diagnosis(models.TextChoices):
+        CROHNS = "CROHNS", "Crohn's Disease"
+        UC = "UC", "Ulcerative Colitis"
+        IBD_UNCLASSIFIED = "IBDU", "IBD Unclassified"
+
+    class DiseaseLocation(models.TextChoices):
+        SMALL_BOWEL = "SMALL_BOWEL", "Small Bowel"
+        COLON = "COLON", "Colon"
+        ILEOCOLONIC = "ILEOCOLONIC", "Ileocolonic"
+        UPPER_GI = "UPPER_GI", "Upper GI"
+        UNKNOWN = "UNKNOWN", "Unknown"
+
+    diagnosis = models.CharField(max_length=20, choices=Diagnosis.choices, default=Diagnosis.CROHNS)
+    diagnosis_date = models.DateField(null=True, blank=True)
+    disease_location = models.CharField(max_length=100, choices=DiseaseLocation.choices, blank=True)
+    disease_behavior = models.CharField(max_length=100, blank=True)
+    surgeries = models.TextField(blank=True)
+    family_history = models.TextField(blank=True)
+    # Food notes related to the patients IBD triggers 
+    # Life Events related to the patient's IBD journey
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -187,6 +205,16 @@ class HeardAIFoodInputAnalysis(HeardAIAnalysisBase):
 
     def __str__(self):
         return f"AI Analysis for Food Input of {self.patient_food_input.patient_entry.patient_record.name}"
+
+class HeardAIToiletInputAnalysis(HeardAIAnalysisBase):
+    patient_toilet_input = models.OneToOneField(
+        PatientToiletInput,
+        on_delete=models.CASCADE,
+        related_name='ai_analysis'
+    )
+
+    def __str__(self):
+        return f"AI Analysis for Toilet Input of {self.patient_toilet_input.patient_entry.patient_record.name}"
 
 # AI Agent Overall Response from 4 weeks of patient entries
 class HeardAIMonthlyAnalysis(models.Model):

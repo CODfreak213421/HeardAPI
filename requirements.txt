@@ -23,3 +23,4 @@ django-silk
 django-extensions
 pydotplus
 pygraphviz
+drf-yasg

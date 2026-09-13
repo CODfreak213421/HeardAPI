@@ -1,5 +1,5 @@
 from django.contrib import admin
-from core.models import PatientRecord, PatientEntry
+from core.models import PatientBackground, PatientRecord, PatientEntry
 
 # Register your models here.
 @admin.register(PatientRecord)
@@ -8,4 +8,5 @@ class PatientRecordAdmin(admin.ModelAdmin):
     search_fields = ('name', 'email')
     list_filter = ('created_at', 'updated_at')
 
+admin.site.register(PatientBackground)
 admin.site.register(PatientEntry)

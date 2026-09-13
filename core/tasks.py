@@ -2,7 +2,7 @@ import os
 from celery import shared_task
 import time
 
-from core.models import HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, FoodInputMacros
+from core.models import HeardAIToiletInputAnalysis, HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, FoodInputMacros
 
 @shared_task
 def add(x, y):
@@ -97,3 +97,41 @@ def HAI_food_analysis_task(
         )
 
         food_macro.save()
+
+@shared_task
+def HAI_toilet_analysis_task(
+    entry_id:int,
+    patient_stool_type: str,
+    patient_stool_blood: str,
+    patient_stool_urgency: str,
+    patient_stool_at_night: str
+):
+
+    from core.agents.HAI_toilet_agent import app
+    from core.models import PatientEntry
+
+    # Call the toilet_input_analysis function
+    result = app.invoke({
+        "patient_stool_type": patient_stool_type,
+        "patient_stool_blood": patient_stool_blood,
+        "patient_stool_urgency": patient_stool_urgency,
+        "patient_stool_at_night": patient_stool_at_night,
+        "analysis_status": "",
+        "color_status": "",
+        "analysis_text": ""
+    })
+
+    # Get the patient entry 
+    entry = PatientEntry.objects.get(id=entry_id)
+
+    # Get the toilet input 
+    toilet_input = entry.toilet_inputs
+
+    ai_analysis = HeardAIToiletInputAnalysis.objects.create(
+        patient_toilet_input=toilet_input,
+        analysis_status=result['analysis_status'],
+        color_status=result['color_status'],
+        analysis_text=result['analysis_text']
+    )
+
+    ai_analysis.save()

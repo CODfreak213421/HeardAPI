@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "corsheaders", # from Django-cors-headers
     'django_celery_results', # from django-celery-results
     'django_celery_beat',
+    "drf_yasg",
     'core',    
 ]
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import FoodInputMacros, HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, PatientFoodInput, PatientRecord, PatientEntry, PatientReflectInput
+from core.models import FoodInputMacros, HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, PatientFoodInput, PatientRecord, PatientEntry, PatientReflectInput, PatientToiletInput
 
 
 # Patient Reflect Input Serializers 
@@ -17,6 +17,17 @@ class PatientFoodInputSerializer(serializers.ModelSerializer):
         fields = [
             "food_description",
             "food_image",
+        ]
+
+# Patient Toilet Input Serializers
+class PatientToiletInputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientToiletInput
+        fields = [
+            "stool_type",
+            "stool_blood",
+            "stool_urgency",
+            "stool_at_night"
         ]
 
 # Creating patient entries with Reflection Input
@@ -75,6 +86,34 @@ class PatientEntryCreateFoodInputSerializer(serializers.ModelSerializer):
 
         return entry
 
+# Creating patient entries with Toilet Input
+class PatientEntryCreateToiletInputSerializer(serializers.ModelSerializer):
+    toilet_inputs = PatientToiletInputSerializer(required=False)
+
+    class Meta:
+        model = PatientEntry
+        fields = [
+            'patient_record',
+            'entry_type',
+            'input_from',
+            'toilet_inputs',
+        ]
+    
+    def create(self, validated_data):
+        toilet_data = validated_data.pop('toilet_inputs', None)
+
+        entry = PatientEntry.objects.create(**validated_data)
+
+        if toilet_data and entry.entry_type == PatientEntry.EntryType.TOILET:
+            PatientToiletInput.objects.create(
+                patient_entry=entry,
+                **toilet_data
+            )
+        else:
+            raise serializers.ValidationError("Toilet input data is required for TOILET entry type.")
+
+        return entry
+
 # Viewing of Full Patient Data in the API
 class PatientEntrySerializer(serializers.ModelSerializer):
     subentries = serializers.SerializerMethodField(method_name='get_subentries')
@@ -84,6 +123,10 @@ class PatientEntrySerializer(serializers.ModelSerializer):
         if obj.entry_type == PatientEntry.EntryType.FOOD:
             return PatientFoodInputSerializer(
                 obj.food_inputs
+            ).data
+        elif obj.entry_type == PatientEntry.EntryType.TOILET:
+            return PatientToiletInputSerializer(
+                obj.toilet_inputs
             ).data
 
         elif obj.entry_type == PatientEntry.EntryType.REFLECT:
@@ -177,6 +220,24 @@ class HeardAIFoodInputAnalysisSerializer(serializers.ModelSerializer):
             'food_macros',
         )
 
+class HeardAIToiletInputAnalysisSerializer(serializers.ModelSerializer):
+    analysis_status = serializers.CharField(source='ai_analysis.analysis_status', read_only=True)
+    color_status = serializers.CharField(source='ai_analysis.color_status', read_only=True)
+    analysis_text = serializers.CharField(source='ai_analysis.analysis_text', read_only=True)
+
+    class Meta:
+        model = PatientToiletInput
+        fields = (
+            'id',
+            'stool_type',
+            'stool_blood',
+            'stool_urgency',
+            'stool_at_night',
+            'analysis_status',
+            'color_status',
+            'analysis_text',
+        )
+
 class PatientDetailEntryAISerializer(serializers.ModelSerializer):
     subentries = serializers.SerializerMethodField(method_name='get_subentries')
 
@@ -190,6 +251,10 @@ class PatientDetailEntryAISerializer(serializers.ModelSerializer):
         elif obj.entry_type == PatientEntry.EntryType.REFLECT:
             return HeardAIreflectInputAnalysisSerializer(
                 obj.reflect_inputs
+            ).data
+        elif obj.entry_type == PatientEntry.EntryType.TOILET:
+            return HeardAIToiletInputAnalysisSerializer(
+                obj.toilet_inputs
             ).data
 
         return None
