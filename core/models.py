@@ -216,6 +216,21 @@ class HeardAIToiletInputAnalysis(HeardAIAnalysisBase):
     def __str__(self):
         return f"AI Analysis for Toilet Input of {self.patient_toilet_input.patient_entry.patient_record.name}"
 
+# AI Agent Conversation trail with IBD User 
+class HeardAIConversationTrail(models.Model):
+    patient_record = models.ForeignKey(PatientRecord, on_delete=models.CASCADE, related_name='ai_conversation_trails')
+    conversation_text = models.TextField()
+    Image = models.ImageField(upload_to='ai_conversation_uploads/', null=True, blank=True)
+    response_by = models.CharField(max_length=100, choices=[
+        ('AIMessage', 'AIMessage'),
+        ('HumanMessage', 'HumanMessage')
+    ])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"AI Conversation Trail for {self.patient_record.name} at {self.created_at}"
+
 # AI Agent Overall Response from 4 weeks of patient entries
 class HeardAIMonthlyAnalysis(models.Model):
     patient_record = models.ForeignKey(PatientRecord, on_delete=models.CASCADE, related_name='ai_analysis')

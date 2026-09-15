@@ -17,6 +17,8 @@ def multiply(x, y):
 # @shared_task(bind=True, max_retries=3)
 @shared_task
 def HAI_reflect_analysis_task(entry_id: int, patient_reflect_input: str):
+    # Create patient Entry instance 
+
     from core.agents.HAI_reflect_agent import app
     from core.models import PatientEntry
 

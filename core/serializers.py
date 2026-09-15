@@ -1,5 +1,33 @@
 from rest_framework import serializers
-from core.models import FoodInputMacros, HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, PatientFoodInput, PatientRecord, PatientEntry, PatientReflectInput, PatientToiletInput
+from core.models import FoodInputMacros, HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, PatientFoodInput, PatientRecord, PatientEntry, PatientReflectInput, PatientToiletInput, HeardAIConversationTrail
+
+# AI Conversation Trail Serializers
+class HeardAIConversationTrailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HeardAIConversationTrail
+        fields = (
+            'id',
+            'patient_record',
+            'conversation_text',
+            'Image',
+            'response_by',
+            'created_at',
+            'updated_at',
+        )
+
+class PatientRecordChatSerializer(serializers.ModelSerializer):
+    ai_conversation_trails = HeardAIConversationTrailSerializer(
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+        model = PatientRecord
+        fields = (
+            'id',
+            'name',
+            'ai_conversation_trails',
+        )
 
 
 # Patient Reflect Input Serializers 
