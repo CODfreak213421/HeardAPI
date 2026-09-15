@@ -44,7 +44,7 @@ class PatientBackground(models.Model):
     def __str__(self):
         return f"Profile for {self.patient_record.name}"
 
-# Patient Entry models for different types of inputs (reflect, toilet, food, medicine)
+# Patient Entry models for different types of inputs (reflect, toilet, food, medicine, etc...)
 class PatientEntry(models.Model):
     patient_record = models.ForeignKey(PatientRecord, on_delete=models.CASCADE, related_name='patient_entries')
 
