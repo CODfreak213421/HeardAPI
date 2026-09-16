@@ -16,6 +16,9 @@ from .tasks import *
 # Langchain imports for AI agent interaction
 from langchain_core.messages import HumanMessage, AIMessage
 
+# base64 import for image handling
+import base64
+
 # Create your views here.
 class PatientRecordDetailAPIView(generics.RetrieveAPIView):
     serializer_class = PatientRecordSerializer
@@ -49,12 +52,15 @@ class PatientHeardAIChatCreateAPIView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         # Save the new conversation entry
-        conversation = serializer.save()          
+        conversation = serializer.save()  
+
+        # Get the patient 
+        patient = conversation.patient_record
 
         # 1. Rebuild history from DB
         previous = (
             HeardAIConversationTrail.objects
-            .filter(patient_record=conversation.patient_record)
+            .filter(patient_record=patient)
             .order_by("created_at")               
             .exclude(id=conversation.id)
         )
@@ -66,18 +72,32 @@ class PatientHeardAIChatCreateAPIView(generics.CreateAPIView):
             else:
                 messages.append(HumanMessage(content=trail.conversation_text))
 
-        # 2. Add the brand-new human message
-        messages.append(HumanMessage(content=conversation.conversation_text))
+        # 2. Build the new human message (with optional image)
+        content = [{"type": "text", "text": conversation.conversation_text}]
+
+        if getattr(conversation, "Image", None):          # or whatever the field is called
+            with conversation.Image.open("rb") as f:
+                b64 = base64.b64encode(f.read()).decode()
+            mime = getattr(conversation.Image.file, "content_type", "image/jpeg")
+            content.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:{mime};base64,{b64}"}
+            })
+
+        messages.append(HumanMessage(content=content))
         
         # 3. Invoke – the reducer will keep everything
         from core.agents.HAI_Supervisor_agent import app
-        result = app.invoke({"messages": messages})
+        result = app.invoke({
+            "messages": messages,
+            "patient_id": str(patient.id)
+            })
 
         ai_message = result["messages"][-1]
 
         # 4. Persist the AI reply
         HeardAIConversationTrail.objects.create(
-            patient_record=conversation.patient_record,
+            patient_record=patient,
             response_by="AIMessage",
             conversation_text=ai_message.content,
         )

@@ -7,7 +7,9 @@ from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolNode
+from langgraph.prebuilt import InjectedState, ToolNode
+
+from core.tasks import patient_food_task, patient_reflect_task, patient_toilet_task
 
 
 load_dotenv()
@@ -15,44 +17,72 @@ load_dotenv()
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
+    patient_id: str
 
 
 @tool
-def Patient_Reflect_Input_Tool():
+def Patient_entry_history_Tool():
+    """Retrieves the patient's background and history."""
+    
+    print("Patient_entry_history_Tool was called")
+    
+    return "Patient background successfully retrieved."
+
+@tool
+def Patient_Reflect_Input_Logging_Tool(reflect_input: str, patient_id: Annotated[str, InjectedState("patient_id")]):
     """Logs and processes the patient's REFLECT input."""
     
-    print("Patient_Reflect_Input_Tool was called")
+    patient_reflect_task.delay(
+        patient_id = patient_id, 
+        reflect_input = reflect_input
+        )
     
     return "REFLECT input successfully processed."
 
 
 @tool
-def Patient_Food_Input_Tool():
-    """Logs and processes the patient's FOOD input."""
+def Patient_Food_Input_Logging_Tool(food_input: str, patient_id: Annotated[str, InjectedState("patient_id")]):
+    """Logs food the patient ate or is asking about. 
+    Use this for both text descriptions and when the user sends a photo of food.
+    Describe what you see in the image inside food_input.
+    """
     
-    print("Patient_Food_Input_Tool was called")
+    patient_food_task.delay(
+        patient_id = patient_id, 
+        food_input = food_input
+        )
     
     return "FOOD input successfully processed."
 
-
 @tool
-def Patient_Toilet_Input_Tool():
+def Patient_Toilet_Input_Logging_Tool(
+    stool_type: str,
+    stool_blood: bool,
+    stool_urgency: bool,
+    stool_at_night: bool,
+    patient_id: Annotated[str, InjectedState("patient_id")]
+):
     """Logs and processes the patient's TOILET input."""
     
     print("Patient_Toilet_Input_Tool was called")
     
+    patient_toilet_task.delay(
+        patient_id = patient_id,
+        stool_type = stool_type,
+        stool_blood = stool_blood,
+        stool_urgency = stool_urgency,
+        stool_at_night = stool_at_night
+    )
+
     return "TOILET input successfully processed."
 
 
-@tool
-def Patient_Background_Tool():
-    """Retrieves the patient's background and history."""
-    
-    print("Patient_Background_Tool was called")
-    
-    return "Patient background successfully retrieved."
-
-tools = [Patient_Reflect_Input_Tool, Patient_Food_Input_Tool, Patient_Toilet_Input_Tool, Patient_Background_Tool]
+tools = [
+    Patient_Reflect_Input_Logging_Tool, 
+    Patient_Food_Input_Logging_Tool, 
+    Patient_Toilet_Input_Logging_Tool, 
+    Patient_entry_history_Tool
+    ]
 
 model = ChatOpenAI(model="gpt-4o").bind_tools(tools)
 
@@ -101,7 +131,10 @@ def model_call(state:AgentState) -> AgentState:
 
         ### FOOD
 
-        Use FOOD when the user provides information about something they ate, drank, or are considering consuming that is relevant to their IBD tracking.
+        When the user sends any food-related message (text OR image of food), 
+        you MUST call Patient_Food_Input_Logging_Tool.
+        Describe the food clearly in the food_input argument.
+        Do not just answer — always log it first.
 
         Examples include:
 
@@ -110,27 +143,58 @@ def model_call(state:AgentState) -> AgentState:
         * "I ate a lot of cheese."
         * "I had diarrhoea after eating ice cream."
         * "Can I eat this?"
-        * A description of a meal or food shown in an image.
+        * An image of a meal, dish, drink, or food item (with or without accompanying text).
 
-        When FOOD information is provided, call the FOOD tool.
+        ONLY when food-related information is present (text and/or image), call the FOOD tool.
 
         ### TOILET
 
         Use TOILET when the user provides information about bowel movements or toilet-related symptoms.
 
         Examples include:
-
-        * Stool consistency
-        * Stool type
-        * Blood in stool
-        * Bowel urgency
-        * Frequency of bowel movements
-        * Waking at night to use the toilet
-        * Diarrhoea
-        * Constipation
-        * Other bowel-movement characteristics
+        - Stool consistency or type
+        - Blood in stool
+        - Bowel urgency
+        - Waking at night to use the toilet
+        - Diarrhoea
+        - Constipation
+        - Other bowel-movement characteristics
 
         When TOILET information is provided, call the TOILET tool.
+
+        The TOILET tool accepts the following data:
+
+        - stool_type:
+            - NORMAL
+            - LOOSE
+            - WATERY
+            - HARD
+            - BLOODY
+
+        - stool_blood:
+            - true if the user reports blood in their stool
+            - false if the user does not report blood
+
+        - stool_urgency:
+            - true if the user reports bowel urgency
+            - false if the user does not report bowel urgency
+
+        - stool_at_night:
+            - true if the user reports waking during the night to have a bowel movement
+            - false if the user does not report this
+
+        Extract the information from the user's message and pass it to the TOILET tool using the exact field names above.
+
+        Do not invent information that the user did not provide.
+        If a field is not explicitly provided, use the safest appropriate default or ask the user for clarification if the field is required.
+
+        Examples:
+
+        User: "I had a normal bowel movement, no blood, and no urgency."
+        → stool_type="NORMAL"
+        → stool_blood=false
+        → stool_urgency=false
+        → stool_at_night=false
 
         ## MULTIPLE CATEGORIES
 

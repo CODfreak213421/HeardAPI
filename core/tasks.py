@@ -2,7 +2,20 @@ import os
 from celery import shared_task
 import time
 
-from core.models import HeardAIToiletInputAnalysis, HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, FoodInputMacros
+from core.models import (
+    # Analysis models
+    HeardAIFoodInputAnalysis,
+    HeardAIToiletInputAnalysis,
+    HeardAIreflectInputAnalysis,
+    # Input models
+    FoodInputMacros,
+    PatientEntry,
+    PatientFoodInput,
+    PatientReflectInput,
+    PatientToiletInput,
+    # Core
+    PatientRecord,
+)
 
 @shared_task
 def add(x, y):
@@ -13,6 +26,70 @@ def add(x, y):
 def multiply(x, y):
     time.sleep(5)  # Simulate a long-running task
     return x * y
+
+# Revamp of the input tasks 
+@shared_task
+def patient_reflect_task(
+    patient_id: str, 
+    reflect_input: str
+    ):
+
+    patient = PatientRecord.objects.get(id=patient_id)
+
+    entry = PatientEntry.objects.create(
+        patient_record=patient,
+        entry_type="REFLECT",
+        input_from="PATIENT",
+    )
+
+    PatientReflectInput.objects.create(
+        patient_entry=entry,
+        reflection_text=reflect_input,
+    )
+
+@shared_task
+def patient_food_task(
+    patient_id: str,
+    food_input: str
+    ):
+
+    patient = PatientRecord.objects.get(id=patient_id)
+
+    entry = PatientEntry.objects.create(
+        patient_record=patient,
+        entry_type="FOOD",
+        input_from="PATIENT",
+    )
+
+    PatientFoodInput.objects.create(
+        patient_entry=entry,
+        food_description=food_input,
+    )
+
+@shared_task 
+def patient_toilet_task(
+    patient_id: str,
+    stool_type: str,
+    stool_blood: bool,
+    stool_urgency: bool,
+    stool_at_night: bool,
+    ):
+
+    patient = PatientRecord.objects.get(id=patient_id)
+
+    entry = PatientEntry.objects.create(
+        patient_record=patient,
+        entry_type="TOILET",
+        input_from="PATIENT",
+    )
+
+    PatientToiletInput.objects.create(
+        patient_entry=entry,
+        stool_type=stool_type,
+        stool_blood=stool_blood,
+        stool_urgency=stool_urgency,
+        stool_at_night=stool_at_night,
+    )
 
 # @shared_task(bind=True, max_retries=3)
 @shared_task
