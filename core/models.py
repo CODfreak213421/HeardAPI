@@ -44,6 +44,23 @@ class PatientBackground(models.Model):
     def __str__(self):
         return f"Profile for {self.patient_record.name}"
 
+# Patient Champion Stats for tracking the patient's engagement and achievements within the HeardAI system
+class PatientChampionStats(models.Model):
+    patient_entry = models.OneToOneField(PatientRecord, on_delete=models.CASCADE, related_name='champion_stats')
+    stars = models.PositiveIntegerField(default=0)
+
+    habit_xp = models.PositiveIntegerField(default=0)
+    habit_level = models.PositiveIntegerField(default=1)
+
+    competency_xp = models.PositiveIntegerField(default=0)
+    competency_level = models.PositiveIntegerField(default=1)
+
+    resilience_xp = models.PositiveIntegerField(default=0)
+    resilience_level = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"Champion Stats for {self.patient_entry.name}"
+
 # Patient Entry models for different types of inputs (reflect, toilet, food, medicine, etc...)
 class PatientEntry(models.Model):
     patient_record = models.ForeignKey(PatientRecord, on_delete=models.CASCADE, related_name='patient_entries')
@@ -122,11 +139,13 @@ class PatientFeelingInput(models.Model):
 class PatientToiletInput(models.Model):
     patient_entry = models.OneToOneField(PatientEntry, on_delete=models.CASCADE, related_name='toilet_inputs')
     class StoolType(models.TextChoices):
-        NORMAL = "NORMAL", "Normal"
-        LOOSE = "LOOSE", "Loose"
-        WATERY = "WATERY", "Watery"
-        HARD = "HARD", "Hard"
-        BLOODY = "BLOODY", "Bloody"
+        TYPE_1 = "TYPE_1", "Type 1 - Separate hard lumps"
+        TYPE_2 = "TYPE_2", "Type 2 - Sausage-shaped, hard and lumpy"
+        TYPE_3 = "TYPE_3", "Type 3 - Sausage-shaped with cracks"
+        TYPE_4 = "TYPE_4", "Type 4 - Smooth and soft"
+        TYPE_5 = "TYPE_5", "Type 5 - Soft blobs with clear edges"
+        TYPE_6 = "TYPE_6", "Type 6 - Fluffy, mushy pieces"
+        TYPE_7 = "TYPE_7", "Type 7 - Entirely liquid"
     stool_type = models.CharField(max_length=10, choices=StoolType.choices)
     stool_blood = models.BooleanField(default=False)
     stool_urgency = models.BooleanField(default=False)

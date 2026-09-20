@@ -68,10 +68,21 @@ def patient_food_task(
         input_from="PATIENT",
     )
 
-    PatientFoodInput.objects.create(
+    food_entry = PatientFoodInput.objects.create(
         patient_entry=entry,
         food_description=food_input,
     )
+
+    # save the patient food image here if it exists 
+    from core.models import HeardAIConversationTrail
+    conversation = HeardAIConversationTrail.objects.get(
+        id=conversation_id
+    )
+
+    if conversation.Image:
+        food_entry.food_image = conversation.Image
+        food_entry.save(update_fields=["food_image"])
+
 
     return HAI_food_analysis_task.delay(entry.id, food_input, conversation_id)
 

@@ -92,6 +92,18 @@ def toilet_input_analysis(state:AgentState) -> AgentState:
         These symptoms can be relevant when monitoring IBD, but they do not by themselves establish a diagnosis or prove that the patient’s IBD is active.
 
         =====================================================================
+        STOOL TYPES
+        =====================================================================
+        Here is the reference to all stool types according to the Bristol Stool Chart:
+        - TYPE 1 — Separate, hard lumps, like little pebbles or nuts.
+        - TYPE 2 — Sausage-shaped but hard and lumpy.
+        - TYPE 3 — Sausage-shaped with cracks on the surface.
+        - TYPE 4 — Sausage- or snake-shaped, smooth and soft.
+        - TYPE 5 — Soft blobs with clear-cut edges.
+        - TYPE 6 — Fluffy, mushy pieces with ragged or torn edges.
+        - TYPE 7 — Entirely liquid with no solid pieces.
+
+        =====================================================================
         STATUS DEFINITIONS
         =====================================================================
 

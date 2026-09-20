@@ -206,6 +206,7 @@ def model_call(state:AgentState) -> AgentState:
 
         Call the REFLECT logging tool when the user provides information about their:
 
+        Experiencing a flare-up of IBD symptoms, how they resolved their flare-up and its impact on their daily life.
         Pain or abdominal discomfort
         Fatigue or energy
         Stress, anxiety, or mood
@@ -214,6 +215,7 @@ def model_call(state:AgentState) -> AgentState:
         General IBD symptoms
         Feelings or observations about their health
         Symptoms that are not primarily about food or bowel movements
+        Sometimes the user might also eat something and they will mention their food if it is safe for them, log it as well.
 
         Examples:
 
@@ -249,9 +251,9 @@ def model_call(state:AgentState) -> AgentState:
 
         Every new food image is a new food logging event.
 
-        3. TOILET
+        3. TOILET 
 
-        Call the TOILET logging tool whenever the user provides bowel-movement information.
+        Call the TOILET logging tool whenever the user provides bowel-movement information or Stool information.
 
         Relevant information includes:
 
@@ -267,11 +269,30 @@ def model_call(state:AgentState) -> AgentState:
 
         stool_type
 
-        NORMAL
-        LOOSE
-        WATERY
-        HARD
-        BLOODY
+        TYPE 1 — Separate, hard lumps, like little pebbles or nuts.
+        Meaning: Severe constipation. Stool has spent too much time in the colon and has lost significant water content.
+
+        TYPE 2 — Sausage-shaped but hard and lumpy.
+        Meaning: Mild constipation. May indicate a need for better hydration or fiber.
+
+        TYPE 3 — Sausage-shaped with cracks on the surface.
+        Meaning: Normal and healthy stool. Indicates a generally good transit time.
+
+        TYPE 4 — Sausage- or snake-shaped, smooth and soft.
+        Meaning: Ideal stool. Usually very easy to pass.
+
+        TYPE 5 — Soft blobs with clear-cut edges.
+        Meaning: May indicate insufficient fiber. Food is moving somewhat quickly through the digestive system.
+
+        TYPE 6 — Fluffy, mushy pieces with ragged or torn edges.
+        Meaning: Mild diarrhea. Can be associated with inflammation, stress, or dietary irritation.
+
+        TYPE 7 — Entirely liquid with no solid pieces.
+        Meaning: Severe diarrhea. Stool has passed through the colon too quickly for adequate water absorption.
+
+        Example:
+        If the patient reports a smooth, soft, sausage-shaped stool, pass:
+        stool_type="TYPE_4"
 
         stool_blood
 

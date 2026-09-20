@@ -53,17 +53,16 @@ class PatientHeardAIChatCreateAPIView(generics.CreateAPIView):
 
         # Save the new conversation entry
         conversation = serializer.save()  
-        print(str(conversation.id))
 
         # Get the patient 
         patient = conversation.patient_record
 
-        # 1. Rebuild history from DB
-        previous = (
+        # 1. Rebuild history from DB (last 20 messages in chronological order)
+        previous = reversed(
             HeardAIConversationTrail.objects
             .filter(patient_record=patient)
-            .order_by("created_at")               
             .exclude(id=conversation.id)
+            .order_by("-created_at")[:20]
         )
 
         messages = []
