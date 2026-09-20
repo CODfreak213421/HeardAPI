@@ -24,3 +24,5 @@ django-extensions
 pydotplus
 pygraphviz
 drf-yasg
+xhtml2pdf
+pyngrok

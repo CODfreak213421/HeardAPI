@@ -26,8 +26,11 @@ SECRET_KEY = 'django-insecure-%edqe128@o%3=w!iz9-8ofk0=zkpta886lmqps=5(4g&!9!_i$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok.io', 'unfactional-chaya-remoter.ngrok-free.dev']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://unfactional-chaya-remoter.ngrok-free.dev',
+]
 
 # Application definition
 
@@ -50,6 +53,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -143,3 +147,7 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_RESULT_EXTENDED = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5173",
+]

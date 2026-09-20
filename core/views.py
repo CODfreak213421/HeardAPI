@@ -53,6 +53,7 @@ class PatientHeardAIChatCreateAPIView(generics.CreateAPIView):
 
         # Save the new conversation entry
         conversation = serializer.save()  
+        print(str(conversation.id))
 
         # Get the patient 
         patient = conversation.patient_record
@@ -90,8 +91,9 @@ class PatientHeardAIChatCreateAPIView(generics.CreateAPIView):
         from core.agents.HAI_Supervisor_agent import app
         result = app.invoke({
             "messages": messages,
-            "patient_id": str(patient.id)
-            })
+            "patient_id": str(patient.id),
+            "conversation_id": str(conversation.id)
+        })
 
         ai_message = result["messages"][-1]
 
