@@ -216,6 +216,8 @@ def model_call(state:AgentState) -> AgentState:
         Feelings or observations about their health
         Symptoms that are not primarily about food or bowel movements
         Sometimes the user might also eat something and they will mention their food if it is safe for them, log it as well.
+        Medications taken, missed doses, or any side effects experienced.
+        Weight and changes in weight
 
         Examples:
 

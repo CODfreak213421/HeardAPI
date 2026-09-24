@@ -151,3 +151,9 @@ CELERY_RESULT_EXTENDED = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
+
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+    'ngrok-skip-browser-warning'
+]

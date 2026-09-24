@@ -11,4 +11,10 @@ urlpatterns = [
 
     # Creating Chat 
     path('patient/chat/create', views.PatientHeardAIChatCreateAPIView.as_view(), name='create-chat'),
+
+    # Heard Agent Daily Summary
+    path('patient/daily-summary', views.PatientDailySummaryAgentAPIView.as_view(), name='daily-summary'),
+
+    # Heard Agent Monthly Summary
+    path('patient/monthly-summary', views.PatientMonthlySummaryAgentAPIView.as_view(), name='monthly-summary'),
 ]

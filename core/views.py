@@ -1,10 +1,11 @@
 from django.shortcuts import render
-from django.utils import timezone
+import json
 from datetime import timedelta
 from rest_framework import generics
 from rest_framework.response import Response
 
 # Import models 
+from core.agents import HAI_daily_summary_agent, HAI_monthly_summary_agent
 from core.models import PatientRecord, PatientEntry, HeardAIMonthlyAnalysis, HeardAIConversationTrail
 
 # import serializers
@@ -105,3 +106,72 @@ class PatientHeardAIChatCreateAPIView(generics.CreateAPIView):
 
         return Response({"ai_response": ai_message.content})
 
+class PatientDailySummaryAgentAPIView(generics.CreateAPIView):
+
+    def create(self, request, *args, **kwargs):
+
+        patient_id = request.data.get("patient_id")
+        date = request.data.get("date")
+
+        # Get all patient entries for the selected day
+        queryset = PatientEntry.objects.filter(
+            patient_record_id=patient_id,
+            created_at__date=date,
+        ).select_related(
+            'food_inputs',
+            'reflect_inputs',
+            'toilet_inputs',
+        ).order_by('created_at')
+
+        # Serialize all entries with their respective AI analysis
+        patient_entries = PatientDetailEntryAISerializer(
+            queryset,
+            many=True
+        ).data
+
+        state = {
+            "summary": "",
+            "one_day_summary_data": json.dumps(
+                patient_entries,
+                indent=2,
+                default=str
+            ),
+        }
+
+        result = HAI_daily_summary_agent.app.invoke(state)
+
+        return Response({
+            "ai_response": result["summary"]
+        })
+
+class PatientMonthlySummaryAgentAPIView(generics.CreateAPIView):
+    def create(self, request, *args, **kwargs):
+
+        patient_id = request.data.get("patient_id")
+        year = request.data.get("year")
+        month = request.data.get("month")
+
+        # Get all patient entries for the selected month
+        queryset = PatientEntry.objects.filter(
+            patient_record_id=patient_id,
+            created_at__year=year,
+            created_at__month=month,
+        ).values_list(
+            'created_at__date',
+            flat=True
+        ).distinct().order_by(
+            'created_at__date'
+        )
+
+        state = {
+            "patient_id": str(patient_id),
+            "monthly_summary":"",
+            "daily_data":"",
+            "list_of_dates": list(queryset),
+        }
+
+        result = HAI_monthly_summary_agent.app.invoke(state)
+
+        return Response({
+            "ai_response": result["monthly_summary"]
+        })

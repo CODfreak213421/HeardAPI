@@ -58,6 +58,10 @@ class PatientChampionStats(models.Model):
     resilience_xp = models.PositiveIntegerField(default=0)
     resilience_level = models.PositiveIntegerField(default=1)
 
+    class Meta:
+        verbose_name = "Patient Champion Stats"
+        verbose_name_plural = "Patient Champion Stats"
+
     def __str__(self):
         return f"Champion Stats for {self.patient_entry.name}"
 

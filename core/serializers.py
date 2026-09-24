@@ -32,30 +32,39 @@ class PatientRecordChatSerializer(serializers.ModelSerializer):
 
 # Patient Reflect Input Serializers 
 class PatientReflectInputSerializer(serializers.ModelSerializer):
+    analysis_status = serializers.CharField(source='ai_analysis.analysis_status', read_only=True)
+
     class Meta:
         model = PatientReflectInput
         fields = [
             "reflection_text",
+            'analysis_status',
         ]
 
 # Patient Food Input Serializers
 class PatientFoodInputSerializer(serializers.ModelSerializer):
+    analysis_status = serializers.CharField(source='ai_analysis.analysis_status', read_only=True)
+
     class Meta:
         model = PatientFoodInput
         fields = [
             "food_description",
             "food_image",
+            "analysis_status",
         ]
 
 # Patient Toilet Input Serializers
 class PatientToiletInputSerializer(serializers.ModelSerializer):
+    analysis_status = serializers.CharField(source='ai_analysis.analysis_status', read_only=True)
+
     class Meta:
         model = PatientToiletInput
         fields = [
             "stool_type",
             "stool_blood",
             "stool_urgency",
-            "stool_at_night"
+            "stool_at_night",
+            "analysis_status"
         ]
 
 # Viewing of Full Patient Data in the API
