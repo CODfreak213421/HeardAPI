@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db.models import Q
 import json
 from datetime import timedelta
 from rest_framework import generics
@@ -114,13 +115,19 @@ class PatientDailySummaryAgentAPIView(generics.CreateAPIView):
         date = request.data.get("date")
 
         # Get all patient entries for the selected day
+        # Now using Q filter, I will: 
+        # 1. Any entry created on that day (food / reflect / toilet / etc.)
+        # 2. Any doctor-appointment entry whose appointment_date matches the day
         queryset = PatientEntry.objects.filter(
             patient_record_id=patient_id,
-            created_at__date=date,
-        ).select_related(
+            ).filter(
+                Q(created_at__date=date)
+                | Q(doctor_appointment_inputs__appointment_date__date=date)
+            ).select_related(
             'food_inputs',
             'reflect_inputs',
             'toilet_inputs',
+            'doctor_appointment_inputs',
         ).order_by('created_at')
 
         # Serialize all entries with their respective AI analysis

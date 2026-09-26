@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import FoodInputMacros, HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, PatientFoodInput, PatientRecord, PatientEntry, PatientReflectInput, PatientToiletInput, HeardAIConversationTrail
+from core.models import FoodInputMacros, HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, PatientDoctorAppointmentInput, PatientFoodInput, PatientRecord, PatientEntry, PatientReflectInput, PatientToiletInput, HeardAIConversationTrail
 
 # AI Conversation Trail Serializers
 class HeardAIConversationTrailSerializer(serializers.ModelSerializer):
@@ -67,6 +67,15 @@ class PatientToiletInputSerializer(serializers.ModelSerializer):
             "analysis_status"
         ]
 
+# Patient Doctor Appointment Input Serializers
+class PatientDoctorAppointmentInputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientDoctorAppointmentInput
+        fields = [
+            "appointment_date",
+            "reason_and_location_of_visit",
+        ]
+
 # Viewing of Full Patient Data in the API
 class PatientEntrySerializer(serializers.ModelSerializer):
     subentries = serializers.SerializerMethodField(method_name='get_subentries')
@@ -87,6 +96,12 @@ class PatientEntrySerializer(serializers.ModelSerializer):
                 obj.reflect_inputs
             ).data
 
+        elif obj.entry_type == PatientEntry.EntryType.DOCTOR_APPOINTMENT:
+            return PatientDoctorAppointmentInputSerializer(
+                obj.doctor_appointment_inputs
+            ).data
+        
+
         return None
     
     class Meta:
@@ -96,7 +111,6 @@ class PatientEntrySerializer(serializers.ModelSerializer):
             'entry_type',
             'subentries',
             'input_from',
-            'analysed',
             'created_at',
             'updated_at',
         )
@@ -205,9 +219,16 @@ class PatientDetailEntryAISerializer(serializers.ModelSerializer):
             return HeardAIreflectInputAnalysisSerializer(
                 obj.reflect_inputs
             ).data
+        
         elif obj.entry_type == PatientEntry.EntryType.TOILET:
             return HeardAIToiletInputAnalysisSerializer(
                 obj.toilet_inputs
+            ).data
+        
+        # Doctor appointment has no AI analysis
+        elif obj.entry_type == PatientEntry.EntryType.DOCTOR_APPOINTMENT:
+            return PatientDoctorAppointmentInputSerializer(
+                obj.doctor_appointment_inputs
             ).data
 
         return None
@@ -219,7 +240,6 @@ class PatientDetailEntryAISerializer(serializers.ModelSerializer):
             'entry_type',
             'subentries',
             'input_from',
-            'analysed',
             'created_at',
             'updated_at',
         )

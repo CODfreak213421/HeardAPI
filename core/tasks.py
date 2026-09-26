@@ -4,6 +4,7 @@ from celery import shared_task
 from typing import Optional
 import time
 from django.core.files.storage import default_storage
+from django.utils.dateparse import parse_datetime
 
 from core.models import (
     # Analysis models
@@ -12,6 +13,7 @@ from core.models import (
     HeardAIreflectInputAnalysis,
     # Input models
     FoodInputMacros,
+    PatientDoctorAppointmentInput,
     PatientEntry,
     PatientFoodInput,
     PatientReflectInput,
@@ -59,7 +61,6 @@ def patient_food_task(
     conversation_id: str,
     ):
 
-    print("patient_food_task was called")
     patient = PatientRecord.objects.get(id=patient_id)
 
     entry = PatientEntry.objects.create(
@@ -112,6 +113,32 @@ def patient_toilet_task(
     )
 
     return HAI_toilet_analysis_task.delay(entry.id, stool_type, stool_blood, stool_urgency, stool_at_night)
+
+@shared_task
+def patient_doctor_appointment_task(
+    patient_id: str,
+    appointment_date_and_time: str,
+    reason_and_location_of_visit: str,
+):
+
+    patient = PatientRecord.objects.get(id=patient_id)
+
+    appointment_datetime = parse_datetime(appointment_date_and_time)
+
+
+    entry = PatientEntry.objects.create(
+        patient_record=patient,
+        entry_type="DOCTOR_APPOINTMENT",
+        input_from="PATIENT",
+    )
+
+    PatientDoctorAppointmentInput.objects.create(
+        patient_entry=entry,
+        appointment_date=appointment_datetime,
+        reason_and_location_of_visit=reason_and_location_of_visit,
+    )
+
+    
 
 # @shared_task(bind=True, max_retries=3)
 @shared_task

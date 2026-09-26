@@ -121,6 +121,11 @@ def update_monthly_summary_node(state: AgentState) -> AgentState:
         2. *[Point 2 Title]:* [Concise 1-2 sentence description detailing the specific trend, matching exact numbers and dates from the data].
         3. *[Point 3 Title]:* [Concise 1-2 sentence description detailing the specific trend, matching exact numbers and dates from the data].
 
+        ### 📋 Some Questions I want to ask my clinician
+        Identify some questions saved from the past 4 weeks that the patient hopes to ask the clinician and show them here
+        1. *[Question 1]:* [Concise 1-2 sentence description of the question the patient wants to ask, referencing specific events or data from the past 4 weeks].
+        2. *[Question 2]:* [Concise 1-2 sentence description of the question the patient wants to ask, referencing specific events or data from the past 4 weeks].
+
         ### ⏱️ 90-Second Clinical Trend Summary
         (Write exactly one highly dense, professional, and tightly woven paragraph summarizing the past 4 weeks. It must seamlessly connect the overall clinical trajectory, current disease activity score vs. baseline, key active stool/blood/pain metrics, medication adherence patterns, and immediate nutritional risks in a professional clinical narrative.)
 

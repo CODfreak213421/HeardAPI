@@ -50,10 +50,11 @@ def daily_summary_node(state: AgentState) -> AgentState:
             1. Read every REFLECT entry to extract sleep duration, pain scores, energy levels, and medication details.
             2. Read every TOILET entry to track total frequency and categorize stool types.
             3. Read every FOOD entry to monitor intake and check for explicit "trial and error" feedback from the user.
-            4. Consider the timestamps and chronological order of entries.
-            5. Identify important relationships between entries where the data supports a possible connection.
-            6. Compute exact daily metric counts and compile a structured Markdown report.
-            7. Provide practical, cautious advice based ONLY on the information available.
+            4. Read every DOCTOR_APPOINTMENT entry to capture details about the patient's doctor visits, including date, time, and reason for the visit.
+            5. Consider the timestamps and chronological order of entries.
+            6. Identify important relationships between entries where the data supports a possible connection.
+            7. Compute exact daily metric counts and compile a structured Markdown report.
+            8. Provide practical, cautious advice based ONLY on the information available.
 
             Do not skip individual entries simply because a summary has already been provided. The individual entries are the primary source of information.
 
@@ -83,6 +84,12 @@ def daily_summary_node(state: AgentState) -> AgentState:
             FOOD entries contain food descriptions, ingredients, macros, and patient observations. 
             * Look explicitly for user notes marking a food as a **"trial"** (e.g., trying dairy, nightshades, or fiber again).
             * Categorize foods into: **Worked** (no subsequent symptoms logged or explicit user satisfaction) vs. **Did Not Work** (explicit user distress or closely followed by immediate, acute physical symptoms).
+
+            ### DOCTOR_APPOINTMENT
+            DOCTOR_APPOINTMENT entries contain details about the patient's doctor visits, including date, time, and reason for the visit.
+            * Look for explicit mentions of upcoming or past appointments.
+            * Pay attention to the date and time of the appointment.
+            * Note the reason for the visit and any follow-up actions required.
 
             **IMPORTANT:** Do NOT claim that a particular food definitely caused an IBD symptom unless the provided data establishes this clearly. Use cautious language such as *"occurred after"* or *"was temporally associated with"*. Do not present correlation as causation.
 
@@ -132,6 +139,7 @@ def daily_summary_node(state: AgentState) -> AgentState:
             * **Average/Peak Pain Score:** [Score, e.g., 4/10 or "Not Logged"]
             * **Energy Level:** [Low / Medium / High / Not Logged]
             * **Medications Logged:** [List medications recorded as taken today, or "None Logged"]
+            * **Doctor Appointments:** [List any doctor appointments recorded today, including date, time, and reason, or "None Logged"]
 
             ### 🧪 Food Trial & Error Log
             * **Foods That Worked:** [List items explicitly noted as safe or supported by lack of subsequent symptoms, or write "None explicitly noted today"]

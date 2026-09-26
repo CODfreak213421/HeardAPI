@@ -147,9 +147,11 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_RESULT_EXTENDED = True
+CELERY_TIMEZONE = "Asia/Singapore"
 
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
+    "https://jishanafarhad.github.io",
 ]
 
 CORS_ALLOW_HEADERS = [

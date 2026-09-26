@@ -76,6 +76,7 @@ class PatientEntry(models.Model):
         MEDICINE = "MEDICINE", "Medicine"
         FEELING = "FEELING", "Feeling"
         PAIN_TOLERANCE = "PAIN_TOLERANCE", "Pain Tolerance"
+        DOCTOR_APPOINTMENT = "DOCTOR_APPOINTMENT", "Doctor Appointment"
 
     entry_type = models.CharField(max_length=20, choices=EntryType.choices)
 
@@ -84,7 +85,6 @@ class PatientEntry(models.Model):
         CAREGIVER = "caregiver", "Caregiver"
 
     input_from = models.CharField(max_length=20, choices=InputFrom.choices)
-    analysed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -181,6 +181,14 @@ class PatientPainToleranceInput(models.Model):
     def __str__(self):
         return f"Pain Tolerance Input for {self.patient_entry.patient_record.name}"
 
+class PatientDoctorAppointmentInput(models.Model):
+    patient_entry = models.OneToOneField(PatientEntry, on_delete=models.CASCADE, related_name='doctor_appointment_inputs')
+    appointment_date = models.DateTimeField()
+    reason_and_location_of_visit = models.TextField()
+
+    def __str__(self):
+        return f"Doctor Appointment Input for {self.patient_entry.patient_record.name}"
+
 # AI Agent Analysis Models for different types of Entries (reflect, toilet, food, medicine)
 class HeardAIAnalysisBase(models.Model):
 
@@ -257,12 +265,7 @@ class HeardAIConversationTrail(models.Model):
 # AI Agent Overall Response from 4 weeks of patient entries
 class HeardAIMonthlyAnalysis(models.Model):
     patient_record = models.ForeignKey(PatientRecord, on_delete=models.CASCADE, related_name='ai_analysis')
-    patient_entries = models.ManyToManyField(PatientEntry, related_name='ai_analysis_entries')
     analysis_text = models.TextField()
-    ibd_symptoms = models.TextField()
-    food_sensitivities = models.TextField()
-    stress_levels = models.TextField()
-    emotional_wellbeing = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
