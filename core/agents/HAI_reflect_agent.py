@@ -59,6 +59,10 @@ def reflect_input_analysis(state:AgentState) -> AgentState:
         - The reflection contains potentially serious warning signs that may require immediate medical attention.
         - Examples include severe difficulty breathing, severe chest pain, loss of consciousness, signs of stroke, severe bleeding, severe allergic reaction, or other potentially life-threatening symptoms.
         - When clear emergency warning signs are present, classify as URGENT.
+        - If the user declare flares, classify as URGENT!
+        - If the user reports severe abdominal pain, classify as URGENT!
+        - If the user reports cannot move, extreme weakness, or inability to perform daily activities, classify as URGENT!
+        - If the user reports blood in stool, classify as URGENT!
 
         ### Additional Context You Must Consider
 

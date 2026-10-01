@@ -33,7 +33,7 @@ class AgentState(TypedDict):
     list_of_dates: list[str]
     daily_data: str
 
-model = ChatOpenAI(model="gpt-4o")
+model = ChatOpenAI(model="gpt-4.1")
 
 def fetch_data_node(state: AgentState) -> AgentState:
     # Get all the dates saved in the state 
@@ -76,7 +76,7 @@ def update_monthly_summary_node(state: AgentState) -> AgentState:
     SYSTEM_PROMPT = f"""
         # SYSTEM PROMPT: 4-WEEK HCP SHARE CARD SUMMARY AGENT
 
-        ## MESSAGE SHOULD CLEARLY SHOW AT THE START THE MONTH AND YEAR: {state["list_of_dates"]}
+        ## LOOK AT THE MONTH AND YEAR: {state["list_of_dates"]}
 
         ## 1. AGENT IDENTITY & ROLE
         You are called HEARD SHARE CARD AGENT. 
@@ -117,17 +117,19 @@ def update_monthly_summary_node(state: AgentState) -> AgentState:
 
         ### 📋 Top 3 Appointment Discussion Points
         (Identify the 3 most crucial, actionable clinical insights from the past 4 weeks that the patient must bring up to their HCP to advocate for their care. Focus on the sharpest trajectory changes, high-risk self-medication behaviors, or unaddressed lifestyle risks that could shift clinical decision-making.)
+        The points should be shown just in point form, dont need for it to be elaborated further.
         1. *[Point 1 Title]:* [Concise 1-2 sentence description detailing the specific trend, matching exact numbers and dates from the data].
         2. *[Point 2 Title]:* [Concise 1-2 sentence description detailing the specific trend, matching exact numbers and dates from the data].
         3. *[Point 3 Title]:* [Concise 1-2 sentence description detailing the specific trend, matching exact numbers and dates from the data].
 
-        ### 📋 Some Questions I want to ask my clinician
-        Identify some questions saved from the past 4 weeks that the patient hopes to ask the clinician and show them here
+        ### 📋 Questions I want to ask my clinician (Just show the questions, no need for elaboration)
+        Identify some questions saved from the past 4 weeks that the patient hopes to ask the clinician and show them here. Put up to Three questions. Follow the example format below.
         1. *[Question 1]:* [Concise 1-2 sentence description of the question the patient wants to ask, referencing specific events or data from the past 4 weeks].
         2. *[Question 2]:* [Concise 1-2 sentence description of the question the patient wants to ask, referencing specific events or data from the past 4 weeks].
+        3. *[Question 3]:* [Concise 1-2 sentence description of the question the patient wants to ask, referencing specific events or data from the past 4 weeks].
 
         ### ⏱️ 90-Second Clinical Trend Summary
-        (Write exactly one highly dense, professional, and tightly woven paragraph summarizing the past 4 weeks. It must seamlessly connect the overall clinical trajectory, current disease activity score vs. baseline, key active stool/blood/pain metrics, medication adherence patterns, and immediate nutritional risks in a professional clinical narrative.)
+        (Write exactly one highly dense Paragraph, nothing more, professional, and tightly woven paragraph summarizing the past 4 weeks. It must seamlessly connect the overall clinical trajectory, current disease activity score vs. baseline, key active stool/blood/pain metrics, medication adherence patterns, and immediate nutritional risks in a professional clinical narrative.)
 
         ### 📊 Objective Disease Markers & Trajectory
         * *Current Disease Activity:* [Insert Activity Score, Status, and login compliance, e.g., SCCAI 8 (Moderate) from 26 of 28 days logged]

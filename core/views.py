@@ -10,7 +10,7 @@ from core.agents import HAI_daily_summary_agent, HAI_monthly_summary_agent
 from core.models import PatientRecord, PatientEntry, HeardAIMonthlyAnalysis, HeardAIConversationTrail
 
 # import serializers
-from core.serializers import PatientRecordChatSerializer, PatientDetailEntryAISerializer, PatientRecordSerializer, HeardAIConversationTrailSerializer
+from core.serializers import PatientRecordChatSerializer, PatientDetailEntryAISerializer, PatientRecordSerializer, HeardAIConversationTrailSerializer, PatientDetailSerializer
 
 # Import my celery tasks 
 from .tasks import *
@@ -30,6 +30,12 @@ class PatientRecordDetailAPIView(generics.RetrieveAPIView):
 
 class CreatePatientAPIView(generics.CreateAPIView):
     serializer_class = PatientRecordSerializer
+
+class PatientDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = PatientDetailSerializer
+    queryset = PatientRecord.objects.all()
+    lookup_field = 'id'
+    lookup_url_kwarg = 'patient_id'
 
 class EntryDetailAPIView(generics.RetrieveAPIView):
     serializer_class = PatientDetailEntryAISerializer

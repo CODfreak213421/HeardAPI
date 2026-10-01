@@ -145,7 +145,9 @@ def food_input_analysis(state: AgentState) -> AgentState:
 
             ### Overall Risk Classification (Mandatory)
 
-            After analyzing the food/dish, you must classify the overall risk of the meal as one of the following three levels and clearly state it:
+            IF If the (flare triggered) is present, YOU ARE REQUIRED to classify as **Urgent** regardless of other factors.
+            
+            ELSE, after analyzing the food/dish, you must classify the overall risk of the meal as one of the following three levels and clearly state it:
 
             - **Normal**  
             The dish is unlikely to significantly worsen bowel inflammation or trigger symptoms for most people with IBD or gut sensitivity. It contains few or no high-risk items from the categories above, or only mild/occasional concerns that are generally well tolerated.
@@ -155,7 +157,8 @@ def food_input_analysis(state: AgentState) -> AgentState:
 
             - **Urgent**  
             The dish is heavily composed of multiple high-risk factors (e.g., ultra-processed foods + refined sugars + processed meats + alcohol + high inflammatory fats, etc.) that are strongly linked to worsening inflammation, flares, or significant symptom aggravation. Immediate dietary adjustment is recommended, particularly if the person is in a flare or has active IBD.
-
+            
+            
             ### How You Should Respond
 
             When given a food image:

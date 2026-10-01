@@ -1,6 +1,16 @@
 from rest_framework import serializers
 from core.models import FoodInputMacros, HeardAIreflectInputAnalysis, HeardAIFoodInputAnalysis, PatientDoctorAppointmentInput, PatientFoodInput, PatientRecord, PatientEntry, PatientReflectInput, PatientToiletInput, HeardAIConversationTrail
 
+# Patient Detail Serializers
+class PatientDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PatientRecord
+        fields = (
+            'id',
+            'name',
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
+
 # AI Conversation Trail Serializers
 class HeardAIConversationTrailSerializer(serializers.ModelSerializer):
     class Meta:

@@ -28,7 +28,7 @@ class AgentState(TypedDict):
     one_day_summary_data: str
 
 
-model = ChatOpenAI(model="gpt-4o")
+model = ChatOpenAI(model="gpt-4.1")
 
 def daily_summary_node(state: AgentState) -> AgentState:
     # Perform analysis on the food input and update the summary

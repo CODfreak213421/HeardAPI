@@ -32,44 +32,43 @@ def Patient_entry_history_Tool(
     date_range_start: str, 
     date_range_end: str,
     entry_types: list[str], 
-    patient_id: Annotated[str, InjectedState("patient_id")]):
+    patient_id: Annotated[str, InjectedState("patient_id")]
+):
     """
     Retrieves the patient's historical entries within a date range. 
-    Available entry types: 
-    - REFLECT: Patient thoughts, symptoms, experiences, and reflections. 
-    - TOILET: Bowel movements, stool type, blood, urgency, and nighttime bowel movements. 
-    - FOOD: Foods and meals consumed by the patient. 
-    - DOCTOR_APPOINTMENT: Details of the patient's doctor appointments, including date, time, and reason for the visit. 
+
+    Available entry types:
+    - REFLECT: Patient thoughts, symptoms, experiences, and reflections.
+    - TOILET: Bowel movements, stool type, blood, urgency, and nighttime bowel movements.
+    - FOOD: Foods and meals consumed by the patient.
+    - DOCTOR_APPOINTMENT: Details of the patient's doctor appointments, including date, time, and reason for the visit.
+
     Choose only the entry types relevant to the patient's question.
 
     When the user asks for "today", "yesterday", or any single day:
     - date_range_start = that day's date at 00:00:00
-    - date_range_end   = that day's date at 23:59:59
+    - date_range_end = that day's date at 23:59:59
 
-    Example for today (2026-09-19):
-    date_range_start: "2026-09-19 00:00:00"
-    date_range_end: "2026-09-19 23:59:59"
+    Use ISO 8601 datetime format:
+    date_range_start: "2026-09-19T00:00:00"
+    date_range_end: "2026-09-19T23:59:59"
     """
 
     print("ENTRY HISTORY TOOL CALLED")
 
-    start_date = datetime.strptime(
-        date_range_start,
-        "%Y-%m-%d %H:%M:%S"
-    )
+    start_date = datetime.fromisoformat(date_range_start)
+    end_date = datetime.fromisoformat(date_range_end)
 
-    end_date = datetime.strptime(
-        date_range_end,
-        "%Y-%m-%d %H:%M:%S"
-    )
+    # Make the datetimes timezone-aware if necessary
+    if timezone.is_naive(start_date):
+        start_date = timezone.make_aware(start_date)
 
-    # Make the datetimes timezone-aware
-    start_date = timezone.make_aware(start_date)
-    end_date = timezone.make_aware(end_date)
-    
+    if timezone.is_naive(end_date):
+        end_date = timezone.make_aware(end_date)
+
     entries = PatientEntry.objects.filter(
         patient_record=patient_id,
-        entry_type__in = entry_types,
+        entry_type__in=entry_types,
         created_at__gte=start_date,
         created_at__lte=end_date
     ).select_related(
@@ -79,7 +78,7 @@ def Patient_entry_history_Tool(
     )
 
     data = PatientEntrySerializer(entries, many=True).data
-    
+
     return data
 
 @tool
@@ -225,7 +224,7 @@ def model_call(state:AgentState) -> AgentState:
 
         * Understand the user's message.
         * Identify all relevant IBD-tracking information.
-        * Call every required logging tool.
+        * YOU MUST CALL every required logging tool.
         * Retrieve patient history only when useful.
         * Ask relevant follow-up questions when appropriate.
         * Respond briefly after all required tools have completed.
@@ -282,14 +281,14 @@ def model_call(state:AgentState) -> AgentState:
         * Weight or changes in weight
         * Questions they want to ask their doctor at their next appointment (even if it is multiple, save under one entry)
 
-        If the user mentions food together with a symptom or experience, log both FOOD and REFLECT when appropriate.
+        If the user mentions food together with a symptom or experience, log both FOOD and REFLECT tools when appropriate.
 
         ### REFLECT FOLLOW-UP QUESTIONS
 
-        After logging REFLECT information, ask relevant follow-up questions based on what the user mentioned:
+        Before or after logging REFLECT information, ask relevant follow-up questions based on what the user mentioned to get more detailed and accurate information:
 
-        * **Flare:** Ask what they ate, where/how severe the pain is, and whether their bowel movements or stool have changed.
-        * **Pain:** Ask what they ate recently and where they feel the pain.
+        * **Flare:** 1. *“What feels different today, and how much worse is it than your usual?”*  2. *“Any blood, fever, vomiting, or severe/unusual pain?”*
+        * **Pain:** On a scale of 0-10, how bad is your pain right now? Where is the pain located? (Ask this before logging the REFLECT information)
         * **Fatigue:** Ask about their recent sleep, diet, and other symptoms.
         * **Medication:** Ask about the medication taken, why it was taken, and whether they noticed any effects or side effects.
         * **General symptoms:** Ask only about details that help understand the symptom.
@@ -309,6 +308,7 @@ def model_call(state:AgentState) -> AgentState:
         * "I ate chicken rice." → FOOD
         * "I had coffee and toast." → FOOD
         * "I ate ice cream waffle." → FOOD
+        * "I had ginger tea and it worked well." → FOOD
 
         ### IMAGE FOOD
 
@@ -324,17 +324,11 @@ def model_call(state:AgentState) -> AgentState:
 
         Do NOT call the text food tool for an image-only food input.
 
+        If the user declares flare, mark (flare triggered) in the food description when calling the food logging tool.
+
         Every new food image is a new food logging event.
 
-        ### FOOD FOLLOW-UP QUESTIONS
-
-        After logging FOOD, ask relevant follow-up questions when appropriate:
-
-        * Ask how the user feels after eating.
-        * Ask whether they experienced discomfort or other symptoms.
-        * Ask whether they noticed any changes in their stool or bowel movements.
-
-        If the user only reports food and gives no indication of symptoms, keep the follow-up brief and natural.
+        If the user only reports food and gives no indication of symptoms, do not ask further follow-up questions but tell them to inform you how they feel after eating for one to two hours.
 
         Do not assume that the food caused any symptom.
 
@@ -496,8 +490,11 @@ def model_call(state:AgentState) -> AgentState:
         Call the 'Patient_History_Input_Logging_Tool' tool only when previous records would materially help.
         Mention them to the user when asking follow-up questions or if you identify patterns.
 
+        You may call this tool multiple times for different filter types
+
         Use history when you need to:
 
+        * When User asks what worked for their symptoms previously, call the 'Patient_History_Input_Logging_Tool' tool and filter to REFLECT and FOOD entries that mention effective foods or interventions.
         * Compare current symptoms with previous entries.
         * Determine whether something is recurring.
         * Understand a pattern.

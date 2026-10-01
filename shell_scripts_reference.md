@@ -32,7 +32,7 @@ with open(output_path, "wb") as f:
     f.write(graph_png)
 
 ### Overriding created at date field 
-from yourapp.models import PatientEntry
+from core.models import PatientEntry
 from django.utils import timezone
 import datetime
 

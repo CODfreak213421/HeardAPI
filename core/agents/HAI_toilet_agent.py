@@ -148,6 +148,8 @@ def toilet_input_analysis(state:AgentState) -> AgentState:
         - Severe abdominal pain when explicitly reported
         - Fainting, severe weakness, or other signs suggesting significant blood loss or serious illness when explicitly reported
         - Other clearly serious symptoms reported alongside the bowel complaint
+        - If the patient reports severe abdominal pain, classify as URGENT!
+        - If the patient reports blood in stool, classify as URGENT!
 
         Do not classify a patient as URGENT simply because blood, urgency, mucus, or nighttime bowel movements are present.
 
@@ -181,6 +183,9 @@ def toilet_input_analysis(state:AgentState) -> AgentState:
         NORMAL → green  
         WORRYING → yellow  
         URGENT → red
+        
+        if the patient reports blood in stool, classify as URGENT!
+        if the patient reports nighttime bowel movements, classify as WORRYING.
 
         analysis_text:  
         A short, clear, and supportive explanation that includes:
